@@ -147,30 +147,40 @@
 <footer>
   <p>© 2026 Misfah Creations. All rights reserved. Karachi, Pakistan.</p>
 </footer>
-
+  
 <script>
-  // 👇 PASTE YOUR GOOGLE SHEET CSV LINK HERE
-  const SHEET_URL = https://docs.google.com/spreadsheets/d/e/2PACX-1vTpPn4MLFZ1-J_rswVQ9qCI5ba2M7uzCEGUNqRCmXVevcSmIJq17AF2TjRaixFguCangf_lrq4pwQeG/pub?gid=0&single=true&output=csv;
+  const SHEET_URL =  https://docs.google.com/spreadsheets/d/e/2PACX-1vTpPn4MLFZ1-J_rswVQ9qCI5ba2M7uzCEGUNqRCmXVevcSmIJq17AF2TjRaixFguCangf_lrq4pwQeG/pub?gid=0&single=true&output=csv;
 
-  fetch(SHEET_URL)
+  const PROXY = 'https://api.allorigins.win/raw?url=';
+
+  fetch(PROXY + encodeURIComponent(SHEET_URL))
     .then(res => res.text())
     .then(csv => {
       const rows = csv.trim().split('\n').slice(1);
       const grid = document.getElementById('product-grid');
       grid.innerHTML = '';
 
+      if(rows.length === 0 || rows[0] === '') {
+        grid.innerHTML = '<p style="text-align:center;color:#888;">No products yet. Add some in your Google Sheet!</p>';
+        return;
+      }
+
       rows.forEach(row => {
-        const [name, description, price, image, whatsapp] = row.split(',');
+        const cols = row.split(',');
+        const name = cols[0] || '';
+        const description = cols[1] || '';
+        const price = cols[2] || '';
+        const image = cols[3] || '';
+        const whatsapp = cols[4] || '';
+
         const msg = `Hi! I want to order: ${name} - ${price}`;
-        const waLink = `https://wa.me/${whatsapp}?text=${encodeURIComponent(msg)}`;
-        const imgSrc = image.trim().startsWith('http')
-          ? image.trim()
-          : image.trim();
+        const waLink = `https://wa.me/${whatsapp.trim()}?text=${encodeURIComponent(msg)}`;
+        const imgSrc = image.trim() || 'https://via.placeholder.com/300x200?text=No+Image';
 
         grid.innerHTML += `
           <div class="product-card">
             <img src="${imgSrc}" alt="${name}"
-                 onerror="this.src='https://via.placeholder.com/300x180?text=No+Image'">
+                 onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
             <div class="card-body">
               <div class="product-name">${name}</div>
               <div class="product-desc">${description}</div>
@@ -185,6 +195,7 @@
         '<p style="text-align:center;color:red;">Could not load products. Please check your sheet URL.</p>';
     });
 </script>
+
 
 </body>
 </html>
